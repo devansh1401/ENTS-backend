@@ -16,7 +16,7 @@ from flask_session import Session
 from authlib.integrations.flask_client import OAuth
 from celery import Celery, Task
 from datetime import timedelta
-from .config import DevelopmentConfig, ProductionConfig, TestingConfig
+from .config import DevelopmentConfig
 from .conn import dburl
 
 db = SQLAlchemy()
@@ -44,16 +44,7 @@ def create_app(debug: bool = False) -> Flask:
     """init flask app"""
     app = Flask(__name__)
     app.secret_key = os.getenv("APP_SECRET_KEY")
-    # handle config type
-    config_type_str = os.getenv("CONFIG_TYPE", default="Development")
-    if config_type_str == "Development":
-        config_type = DevelopmentConfig
-    elif config_type_str == "Production":
-        config_type = ProductionConfig
-    elif config_type_str == "Testing":
-        config_type = TestingConfig
-    else:
-        raise ValueError(f"Invalid config type: {config_type_str}")
+    config_type = os.getenv("CONFIG_TYPE", default=DevelopmentConfig)
     app.config.from_object(config_type)
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
@@ -88,9 +79,7 @@ def create_app(debug: bool = False) -> Flask:
             result_backend=os.getenv("CELERY_RESULT_BACKEND"),
             task_ignore_result=True,
             broker_transport_options={
-                "visibility_timeout": int(timedelta(minutes=15).total_seconds()),
-                "region": "us-west-2",
-                "queue_name_prefix": "dirtviz-celery-",
+                "visibility_timeout": timedelta(minutes=15).total_seconds(),
             },
             task_ack_late=True,
             task_reject_on_worker_lost=True,
