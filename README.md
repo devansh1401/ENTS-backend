@@ -26,6 +26,16 @@ docker compose up --build -d
 
 At this point the backend is accessible at [http://localhost:3000/](http://localhost:3000/), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
+### Windows Development Note
+
+When developing on Windows, be aware that Git may automatically convert line endings from LF (Unix-style) to CRLF (Windows-style). This can cause issues with shell scripts run inside Docker containers, such as `entrypoint.sh` and `migrate.sh`, resulting in errors like "entrypoint.sh not found" or "bad interpreter".
+
+To address this, we've added a `.gitattributes` file that forces shell scripts to maintain LF line endings regardless of the operating system. If you encounter line ending issues:
+
+1. Run `git config --global core.autocrlf input` to configure Git to preserve line endings
+2. Clone the repository again, or
+3. Run `git checkout-index --force --all` to reset your working directory with the correct line endings
+
 ### Generating environmental variables
 
 The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory. The `.env` is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment.
